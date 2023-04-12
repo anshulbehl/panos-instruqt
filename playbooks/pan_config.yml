@@ -1,0 +1,24 @@
+---
+- name: Configure PAN firewall
+  hosts: gcp-fw
+  gather_facts: false
+  connection: local
+
+  tasks:
+  - name: Roles for PAN Setup
+    include_role: 
+      name: "{{ item }}"
+    with_items:
+     - '../roles/initial_setup'
+     - '../roles/objects'
+     - '../roles/security_rules'
+     - '../roles/routes'
+     - '../roles/nat'
+
+  - name: commit Candidate config 
+    paloaltonetworks.panos.panos_commit:
+      provider: '{{ provider }}'
+
+
+
+     
