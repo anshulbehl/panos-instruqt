@@ -1,0 +1,233 @@
+---
+##
+# https://play.instruqt.com/redhat/tracks/getting-started-controller/
+##
+- name: Instruqt config getting started with controller
+  hosts: localhost
+  gather_facts: false
+  become: true
+
+  vars:
+    username: admin
+    admin_password: ansible123!
+    lab_credential_name: "Lab Machine Credential"
+    lab_project_name: "Lab Project"
+    lab_jt_name: "Debug-Info"
+    lab_inventory_name: "Lab-Inventory"
+    lab_organization: "Default"
+    lab_hosts:
+      - host01
+      - host02
+    lab_inv_group_name: "web"
+    custom_facts_dir: "/etc/ansible/facts.d"
+    custom_facts_file: custom_facts.fact
+
+  tags:
+    - getting-started-controller
+
+  tasks:
+    - name: Ensure tower/controller is online and working
+      uri:
+        url: https://localhost/api/v2/ping/
+        method: GET
+        user: "{{ username }}"
+        password: "{{ admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: controller_online
+      until: controller_online is success
+      delay: 3
+      retries: 5
+      tags:
+        - setup-env
+   # Create awx login token and custom fact
+    - name: get awx token and restart automation-controller if it fails
+      block:
+        - name: Gather facts
+          setup:
+          tags:
+            - awx-token
+        - name: login awx token
+          shell: >
+            awx --conf.username admin --conf.password "ansible123!" -k login | jq -r '.token'
+          register: awx_token
+          until: awx_token is success
+          retries: 6
+          delay: 3
+          failed_when: awx_token.rc > 0
+
+      rescue:
+        - name: In rescue block for awx token
+          debug:
+            msg: "failed to get awx token. Restarting automation controller service"
+
+        - name: restart the controller service
+          ansible.builtin.service:
+            name: automation-controller
+            state: restarted
+
+        - name: Ensure tower/controller is online and working
+          uri:
+            url: https://localhost/api/v2/ping/
+            method: GET
+            user: "{{ username }}"
+            password: "{{ admin_password }}"
+            validate_certs: false
+            force_basic_auth: true
+          register: controller_online
+          until: controller_online is success
+          delay: 3
+          retries: 5
+
+        - name: Retry getting awx token
+          shell: >
+            awx --conf.username admin --conf.password "ansible123!" -k login | jq -r '.token'
+          register: awx_token
+          until: awx_token is not failed
+          retries: 6
+          delay: 3
+
+      always:
+        - name: Create fact.d dir
+          file:
+            path: "{{ custom_facts_dir }}"
+            state: directory
+            recurse: yes
+
+        - name: Create awx-token custom fact
+          copy:
+            content: |
+              [localfacts]
+              _awx_token = "{{ awx_token.stdout }}"
+            dest: "{{ custom_facts_dir }}/{{ custom_facts_file }}"
+
+        - name: Refresh facts
+          setup:
+      when: ansible_local.custom_facts.localfacts._awx_token is undefined or  ansible_local.custom_facts.localfacts._awx_token | count == 0
+      tags:
+        - setup-env
+
+    - name: debug custom fact
+      debug:
+        var: ansible_local.custom_facts.localfacts._awx_token
+      tags:
+        - awx-token
+
+    - name: Add the {{ lab_inventory_name }} Inventory
+      awx.awx.inventory:
+        name: "{{ lab_inventory_name }}"
+        description: "Lab Inventory"
+        organization: "{{ lab_organization }}"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+      tags:
+        - solve-jt
+        - solve-inventory
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    - name: Create hosts
+      awx.awx.host:
+        name: "panos-firewall"
+        inventory: "{{ lab_inventory_name }}"
+        state: present
+        validate_certs: false
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        variables:
+          provider:
+              username: "admin"
+              password: "C1sco12345" #change
+              ip_address: "{{ lookup('file', './ip_address') }}" #change
+
+      tags:
+        - solve-jt
+        - solve-inventory
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    - name: Create custom credential
+      awx.awx.credential_type:
+        name: panos_ssh
+        description: Credentials type for panos
+        inputs:
+          fields:
+            - id: my_private_key
+              type: string
+              label: private_key
+              secret: true
+              multiline: true
+        injectors: '{% raw %}{"file": {"template.my_key": "{{ my_private_key  }}"},"extra_vars": {"secret_key": "{{ tower.filename.my_key }}"}}{% endraw %}'
+        state: present
+        kind: cloud
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        validate_certs: false
+
+    - name: Add the firewal ssh credential
+      awx.awx.credential:
+        name: "firewall_cred"
+        organization: "Default"
+        credential_type: panos_ssh
+        inputs:
+          my_private_key: "{{ lookup('file', './id_rsa') }}"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        validate_certs: false
+      tags:
+        - solve-jt
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    # added to controller image build
+
+    - name: Add the panos EE
+      awx.awx.execution_environment:
+        name: "Panos EE"
+        image: "registry.gitlab.com/redhatautomation/panos-ee:latest"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+
+
+    - name: Add the lab project
+      awx.awx.project:
+        name: "{{lab_project_name }}"
+        scm_type: git
+        scm_url: "https://github.com/anshulbehl/panos-instruqt.git"
+        scm_branch: master
+        organization: "Default"
+        scm_update_on_launch: false
+        scm_update_cache_timeout: 60
+        default_environment: "Panos EE"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        validate_certs: false
+      tags:
+        - setup-jt
+
+    - name: Create the lab job template
+      awx.awx.job_template:
+        name: "{{ lab_jt_name }}"
+        state: present
+        become_enabled: true
+        project: "{{ lab_project_name }}"
+        credential: "firewall_cred"
+        inventory: "{{ lab_inventory_name }}"
+        playbook: "playbooks/set_initial_password.yml"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        extra_vars:
+          private_key: '{% raw %}{{ secret_key }}{% endraw %}'
+        validate_certs: false
+      tags:
+        - solve-jt
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    - name: run {{ lab_jt_name }} template
+      awx.awx.job_launch:
+        job_template: "{{ lab_jt_name }}"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        validate_certs: false
+      tags:
+        - solve-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
