@@ -1,6 +1,6 @@
 ---
 - name: Configure PAN firewall
-  hosts: all
+  hosts: panos-firewall
   gather_facts: false
   connection: local
 
