@@ -1,7 +1,6 @@
 provider:
   username: "admin"
   password: "C1sco12345" #change
-  ip_address: "35.238.143.64" #change
 
 #Device
 hostname: "gcp-fw"
