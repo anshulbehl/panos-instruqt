@@ -41,3 +41,5 @@
   - name: commit Candidate config 
     paloaltonetworks.panos.panos_commit:
       provider: '{{ provider }}'
+    tags:
+    - commit

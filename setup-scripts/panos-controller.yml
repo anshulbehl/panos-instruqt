@@ -113,20 +113,6 @@
       tags:
         - awx-token
 
-    - name: Add the {{ lab_inventory_name }} Inventory
-      awx.awx.inventory:
-        name: "{{ lab_inventory_name }}"
-        description: "Lab Inventory"
-        organization: "{{ lab_organization }}"
-        state: present
-        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
-      tags:
-        - solve-jt
-        - solve-inventory
-        - setup-jt
-        - setup-dyn-inv
-        - setup-getting-started-controller-workflows
-
     - name: Create hosts
       awx.awx.host:
         name: "panos-firewall"
@@ -202,6 +188,43 @@
         validate_certs: false
       tags:
         - setup-jt
+      
+    - name: Add the {{ lab_inventory_name }} Inventory
+      awx.awx.inventory:
+        name: "{{ lab_inventory_name }}"
+        description: "Lab Inventory"
+        organization: "{{ lab_organization }}"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+      tags:
+        - solve-jt
+        - solve-inventory
+        - setup-jt
+        - setup-dyn-inv
+        - setup-getting-started-controller-workflows
+
+    - name: Create inventory source
+      awx.awx.inventory_source:
+        name: panos
+        inventory: "{{ lab_inventory_name }}"
+        source: scm
+        source_project: "{{lab_project_name }}"
+        source_path: hosts
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        validate_certs: false
+
+
+    - name: Update inventory source
+      awx.awx.inventory_source_update:
+        name: panos
+        inventory:  "{{ lab_inventory_name }}"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        validate_certs: false
+       
+
+    - name: Sleep for 5 seconds and continue with play
+      ansible.builtin.wait_for:
+        timeout: 5
 
     - name: Create the lab job template
       awx.awx.job_template:
