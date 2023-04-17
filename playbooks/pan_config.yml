@@ -39,7 +39,7 @@
     - routes
 
   - name: commit Candidate config 
-    paloaltonetworks.panos.panos_commit_push:
+    paloaltonetworks.panos.panos_commit_firewall:
       provider: '{{ provider }}'
     tags:
     - commit
