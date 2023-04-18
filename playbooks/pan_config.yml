@@ -9,7 +9,7 @@
     ansible.builtin.include_role: 
       name: '../roles/initial_setup'
     tags:
-      - interfaces
+    - interfaces
 
   - name: Setup Objects
     include_role: 
