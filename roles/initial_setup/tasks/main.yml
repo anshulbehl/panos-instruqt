@@ -5,6 +5,7 @@
     dns_server_primary: "{{ dns_server_primary }}"
     dns_server_secondary: "{{ dns_server_secondary }}"
     hostname: "{{ hostname }}"
+  tags: interfaces
 
 - name: Create Zones
   paloaltonetworks.panos.panos_zone:
@@ -17,6 +18,7 @@
     label:
       - "{{ zone_item.zone_name }}"
       - "{{ zone_item.mode }}"
+  tags: interfaces
 
 - name: Ensure mngt profile exists
   paloaltonetworks.panos.panos_management_profile:
@@ -27,6 +29,7 @@
   loop: "{{ panos_management_profile }}"
   loop_control:
     loop_var: mgmt_item
+  tags: interfaces
 
 - name: Enable DHCP interfaces
   paloaltonetworks.panos.panos_interface:
@@ -44,3 +47,4 @@
       - "{{  interface_item.if_name }}"
       - "{{  interface_item.zone_name }}"
       - "{{  interface_item.create_default_route }}"
+  tags: interfaces
