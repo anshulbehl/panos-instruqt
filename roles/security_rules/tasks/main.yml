@@ -1,5 +1,5 @@
-
-- name: add Security rules  
+---
+- name: Add Security rules
   paloaltonetworks.panos.panos_security_rule:
     provider: '{{ provider }}'
     rule_name: '{{ security_item.rule_name }}'
@@ -14,8 +14,5 @@
     log_end: "yes"
   loop: '{{ panos_security_rule }}'
   loop_control:
-        loop_var: security_item
-
-
-    
-  
+    loop_var: security_item
+  tags: securitynatrules

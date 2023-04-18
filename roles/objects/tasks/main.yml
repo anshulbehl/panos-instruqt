@@ -1,3 +1,4 @@
+---
 - name: Create Address objects
   paloaltonetworks.panos.panos_address_object:
     provider: '{{ provider }}'
