@@ -320,4 +320,5 @@
         validate_certs: false
         job_tags: "commit"
       tags:
-        - commit  
+        - commit
+ 
