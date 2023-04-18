@@ -8,8 +8,7 @@
   - name: Setup firewall interfaces
     ansible.builtin.include_role: 
       name: '../roles/initial_setup'
-    tags:
-    - interfaces
+    tags: interfaces
 
   - name: Setup Objects
     include_role: 
@@ -35,5 +34,4 @@
   - name: commit Candidate config 
     paloaltonetworks.panos.panos_commit_firewall:
       provider: '{{ provider }}'
-    tags:
-    - commit
+    tags: commit
