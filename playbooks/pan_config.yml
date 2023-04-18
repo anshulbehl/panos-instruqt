@@ -42,4 +42,4 @@
     paloaltonetworks.panos.panos_commit_firewall:
       provider: '{{ provider }}'
     tags:
-    - commit
+      - commit
