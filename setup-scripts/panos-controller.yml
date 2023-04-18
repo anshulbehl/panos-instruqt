@@ -13,7 +13,7 @@
     lab_credential_name: "Lab Machine Credential"
     lab_project_name: "Firewall Project"
     lab_jt_name: "Setup initial password"
-    lab_inventory_name: "Panos-firewall-Inventory"
+    lab_inventory_name: "Panos-firewall Managenent"
     lab_organization: "Default"
     custom_facts_dir: "/etc/ansible/facts.d"
     custom_facts_file: custom_facts.fact
@@ -153,7 +153,7 @@
         inputs:
           username: admin
           ssh_key_data: "{{ lookup('file', './id_rsa') }}"
-      tags: 
+      tags:
         - initial-setup
 
     # added to controller image build
@@ -193,7 +193,7 @@
 
     - name: Create hosts
       awx.awx.host:
-        name: "panos-firewall"
+        name: "panos-firewall management"
         inventory: "{{ lab_inventory_name }}"
         state: present
         validate_certs: false
@@ -201,6 +201,32 @@
         variables: "{{ lookup('file', './panos-firewall.yml') | from_yaml }}"
       tags:
         - initial-setup
+
+    - name: Add the rhel Inventory
+      awx.awx.inventory:
+        name: "PANOS untrust"
+        description: "panos untrust interface"
+        organization: "{{ lab_organization }}"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        validate_certs: false
+      tags:
+        - initial-setup
+
+    - name: Add rhel host to untrust
+      awx.awx.host:
+        name: panos-firewall untrust
+        inventory: "{{ lab_inventory_name }}"
+        state: present
+        validate_certs: false
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        variables:
+          ansible_host: "{{ (lookup('file', './panos-firewall.yml') | from_yaml).untrust_interface_ip }}"
+          ansible_user: "admin"
+          ansible_port: 221
+        tags:
+          - initial-setup
+
 
     - name: Create the lab job template
       awx.awx.job_template:
