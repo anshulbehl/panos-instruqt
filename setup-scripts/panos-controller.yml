@@ -193,7 +193,7 @@
 
     - name: Create hosts
       awx.awx.host:
-        name: "panos-firewall management"
+        name: "panos-firewall"
         inventory: "{{ lab_inventory_name }}"
         state: present
         validate_certs: false
