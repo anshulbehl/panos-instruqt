@@ -1,23 +1,45 @@
 ---
-  - name: Configure PAN firewall
-    hosts: all
-    gather_facts: false
-    connection: local
-  
-    tasks:
-    - name: Roles for PAN Setup
-      include_role: 
-        name: "{{ item }}"
-      with_items:
-       - '../roles/initial_setup'
-       - '../roles/objects'
-       - '../roles/security_rules'
-       - '../roles/routes'
-       - '../roles/nat'
-  
-    - name: commit Candidate config 
-      paloaltonetworks.panos.panos_commit:
-        provider: '{{ provider }}'
-  
-  
-  
+- name: Configure PAN firewall
+  hosts: all
+  gather_facts: false
+  connection: local
+
+  tasks:
+  - name: Setup firewall interfaces
+    include_role: 
+      name: "{{ item }}"
+    with_items:
+     - '../roles/initial_setup'
+    tags:
+     - interfaces
+
+  - name: Setup Objects
+    include_role: 
+      name: "{{ item }}"
+    with_items:
+     - '../roles/objects'
+    tags:
+     - objects
+     
+  - name: Setup security and NAT rules
+    include_role: 
+      name: "{{ item }}"
+    with_items:
+     - '../roles/security_rules'
+     - '../roles/nat'
+    tags:
+     - securitynatrules
+
+  - name: Setup routes
+    include_role: 
+      name: "{{ item }}"
+    with_items:
+     - '../roles/routes'
+    tags:
+     - routes
+
+  - name: commit Candidate config 
+    paloaltonetworks.panos.panos_commit_firewall:
+      provider: '{{ provider }}'
+    tags:
+     - commit
