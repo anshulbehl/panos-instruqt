@@ -127,8 +127,8 @@
         kind: cloud
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
         validate_certs: false
-        tags:
-          - initial-setup
+      tags:
+        - initial-setup
 
     - name: Add the firewall ssh credential
       awx.awx.credential:
@@ -153,7 +153,8 @@
         inputs:
           username: admin
           ssh_key_data: "{{ lookup('file', './id_rsa') }}"
-      tags: initial-setup
+      tags: 
+        - initial-setup
 
     # added to controller image build
 
