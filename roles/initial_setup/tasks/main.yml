@@ -34,7 +34,7 @@
     if_name: "{{ interface_item.if_name }}"
     zone_name: "{{ interface_item.zone_name }}"
     create_default_route: "{{ interface_item.create_default_route }}"
-    management_profile: "{{ interface_item.management_profile| default(omit) }}"
+    management_profile: "{{ interface_item.management_profile | default(omit) }}"
     vsys: vsys1
     commit: "{{ interface_item.commit }}"
   loop: "{{ interfaces }}"
