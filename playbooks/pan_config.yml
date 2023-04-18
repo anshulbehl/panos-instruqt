@@ -10,11 +10,10 @@
       name: '../roles/initial_setup'
     tags: interfaces
 
-  # - name: Setup Objects
-  #   include_role: 
-  #     name: '../roles/objects'
-  #   tags:
-  #     - objects
+  - name: Setup Objects
+    include_role: 
+      name: '../roles/objects'
+    tags: objects 
      
   # - name: Setup security and NAT rules
   #   include_role: 
