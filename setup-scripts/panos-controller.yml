@@ -304,6 +304,20 @@
         playbook: "playbooks/pan_config.yml"
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
         validate_certs: false
-        job_tags: "routes,commit"
+        job_tags: "routes"
       tags:
         - routes
+
+    - name: Create the commit job template
+      awx.awx.job_template:
+        name: "Commit candidate config"
+        state: present
+        become_enabled: true
+        project: "{{ lab_project_name }}"
+        inventory: "{{ lab_inventory_name }}"
+        playbook: "playbooks/pan_config.yml"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        validate_certs: false
+        job_tags: "commit"
+      tags:
+        - commit  
