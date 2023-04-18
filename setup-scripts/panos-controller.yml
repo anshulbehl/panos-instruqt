@@ -204,7 +204,7 @@
 
     - name: Add the rhel Inventory
       awx.awx.inventory:
-        name: "PANOS untrust"
+        name: "Panos-firewall Untrust"
         description: "panos untrust interface"
         organization: "{{ lab_organization }}"
         state: present
@@ -215,7 +215,7 @@
 
     - name: Add rhel host to untrust
       awx.awx.host:
-        name: panos-firewall untrust
+        name: rhel-vm
         inventory: "{{ lab_inventory_name }}"
         state: present
         validate_certs: false
