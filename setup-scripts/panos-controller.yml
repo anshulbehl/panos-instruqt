@@ -216,7 +216,7 @@
     - name: Add rhel host to untrust
       awx.awx.host:
         name: rhel-vm
-        inventory: "{{ lab_inventory_name }}"
+        inventory: "Panos-firewall Untrust"
         state: present
         validate_certs: false
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
