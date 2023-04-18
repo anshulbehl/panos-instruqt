@@ -9,7 +9,7 @@
     include_role: 
       name: "{{ item }}"
     with_items:
-    - '../roles/initial_setup'
+      - '../roles/initial_setup'
     tags:
     - interfaces
 
