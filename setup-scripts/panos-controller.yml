@@ -224,8 +224,8 @@
           ansible_host: "{{ (lookup('file', './panos-firewall.yml') | from_yaml).untrust_interface_ip }}"
           ansible_user: "admin"
           ansible_port: 221
-        tags:
-          - initial-setup
+      tags:
+        - initial-setup
 
 
     - name: Create the lab job template
