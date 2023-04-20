@@ -156,6 +156,17 @@
       tags:
         - initial-setup
 
+    - name: Add localhost machine credential
+      awx.awx.credential:
+        name: localhost
+        credential_type: Machine
+        organization: "Default"
+        state: present
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        validate_certs: false
+      tags:
+        - initial-setup
+
     # added to controller image build
 
     - name: Add the panos EE
