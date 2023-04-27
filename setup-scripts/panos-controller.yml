@@ -332,4 +332,18 @@
         job_tags: "commit"
       tags:
         - commit
+
+    - name: Create the httpd accessibility JT
+      awx.awx.job_template:
+        name: "Setup landing page for RHEL VM"
+        state: present
+        become_enabled: true
+        project: "{{ lab_project_name }}"
+        inventory: "Panos-firewall Untrust"
+        playbook: "playbooks/httpd.yml"
+        controller_config_file: "{{ playbook_dir }}/../controller.cfg"
+        validate_certs: false
+        job_tags: "commit"
+      tags:
+        - httpd
  
