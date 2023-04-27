@@ -341,6 +341,7 @@
         project: "{{ lab_project_name }}"
         inventory: "Panos-firewall Untrust"
         playbook: "playbooks/httpd.yml"
+        execution_environment: "Default execution environment"
         controller_config_file: "{{ playbook_dir }}/../controller.cfg"
         validate_certs: false
         job_tags: "commit"
